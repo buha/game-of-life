@@ -2,9 +2,11 @@ from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
 from PyQt5.QtCore import Qt, QTimer, QPointF, QLineF, QRectF
 from PyQt5.QtGui import QBrush, QPen, QColor
 from random import randint
+from universe import Universe
 
 class constants():
-    CellToScreenRatio = 0.01
+    CellToScreenRatio = 0.002
+    AtomicTick = 1.0
     background = QColor(60, 60, 60)
     grid = QColor(20, 20, 20)
     cell = QColor(84, 158, 39)
@@ -42,25 +44,41 @@ class UniverseView(QGraphicsView):
         self.rows = int(self.scene.height() / self.cell_size)
         self.cols = int(self.scene.width() / self.cell_size)
 
+        # create a random initial state for the universe
+        initial = [[(randint(0, 10) == 9) for i in range(self.cols)] for j in range(self.rows)]
+
+        # create the universe
+        self.universe = Universe(initial)
+
         # the fun begins here
-        self.timer.start(300)
-        self.generation = 0
+        self.timer.start(constants.AtomicTick * 1000)
 
     def stop(self):
         self.timer.stop()
 
-    def drawCell(self, row, col):
-        item = QGraphicsRectItem(col * self.cell_size,
-                                 row * self.cell_size,
+    def drawCell(self, x, y):
+        item = QGraphicsRectItem(x * self.cell_size,
+                                 y * self.cell_size,
                                  self.cell_size,
                                  self.cell_size)
         item.setBrush(QBrush(constants.cell))
         item.setPen(constants.grid)
         self.scene.addItem(item)
 
+    def draw(self, state):
+        '''
+        Draw the scene.
+        :param state: 2D list of booleans
+        '''
+        for rowi, row in enumerate(state):
+            for celli, cell in enumerate(row):
+                if cell:
+                    self.drawCell(celli, rowi)
+
     def rePaint(self):
-        # grow older
-        self.generation += 1
+        # evolve
+        self.universe.evolve()
+        print("Universe age {}".format(self.universe._age))
 
         # delete everything on the canvas
         self.scene.clear()
@@ -76,14 +94,6 @@ class UniverseView(QGraphicsView):
             line = self.scene.addLine((col + 1) * self.cell_size, 0, (col + 1) * self.cell_size, self.scene.height())
             line.setPen(QPen(QBrush(constants.grid), 1))
 
-        # cells
-        self.drawCell(randint(0,  self.rows - 1) , randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
-        self.drawCell(randint(0, self.rows - 1), randint(0, self.cols - 1))
+        # draw the universe
+        state = self.universe.state()
+        self.draw(state)
