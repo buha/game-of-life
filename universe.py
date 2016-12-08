@@ -1,3 +1,11 @@
+from enum import Enum
+
+class LifeformState(Enum):
+    dead = 0,
+    alive = 1,
+    dying = 2,
+    resurrecting = 3
+
 class Lifeform():
     def __init__(self, state=False):
         '''
@@ -5,21 +13,21 @@ class Lifeform():
         :param state: True stands for alive, False stands for dead.
         '''
         self._age = 0
-        self._state = state
+        self._state = LifeformState.alive if state else LifeformState.dead
         self._neighbors = []
 
     def alive(self):
         '''
         Is this cell alive?
         '''
-        return self._state
+        return True if self._state in [LifeformState.alive, LifeformState.dying] else False
 
-    def specifyNeighbor(self, neighbor):
+    def specifyNeighbors(self, neighbors):
         '''
         Tell the lifeform whom its neighbor is.
         :param neighbor: another lifeform
         '''
-        self._neighbors.append(neighbor)
+        self._neighbors = neighbors
 
     def aliveNeighbors(self):
         '''
@@ -33,18 +41,21 @@ class Lifeform():
         This is where the Game of Life rules get implemented
         '''
         nc = self.aliveNeighbors()
+
         if (nc < 2 or nc > 3) and self.alive():
-            self.kill()
-        elif nc == 3 and not self.alive():
-            self.resurrect()
-        return 0
+            self._state = LifeformState.dying
+        if nc == 3 and not self.alive():
+            self._state = LifeformState.resurrecting
 
-    def kill(self):
-        self._state = False
+        if self.alive():
+            self._age += 1
 
-    def resurrect(self):
-        self._state = True
+    def updateState(self):
+        if self._state == LifeformState.dying:
+            self._state = LifeformState.dead
 
+        if self._state == LifeformState.resurrecting:
+            self._state = LifeformState.alive
 
 
 class Universe():
@@ -59,45 +70,37 @@ class Universe():
         # create all the Lifeforms and store them into the Universe's state
         self._state = [[Lifeform(i) for i in row] for row in state]  # 2D list of Lifeforms
 
-        # repass over the Universe's state to specify neighbors (there must be a better way!)
+    def updateNeighbors(self):
+        # repass over the Universe's state to specify neighbors
         for rowi, row in enumerate(self._state):
             for lifei, life in enumerate(row):
+                neighbors = []
                 for j in range(rowi - 1, rowi + 2):
                     for i in range(lifei - 1, lifei + 2):
-                        if (i, j) != (lifei, rowi) \
-                                and i >= 0 \
-                                and j >= 0 \
-                                and i < len(row) \
-                                and j < len(self._state):
-                            #print('attempt to access _state[{}][{}]'.format(j,i))
-                            life.specifyNeighbor(self._state[j][i])
-                '''
-                try:
-                    print('attempt to access _state[{}][{}]'.format(rowi - 1, lifei - 1))
-                    life.specifyNeighbor(self._state[rowi - 1][lifei - 1])
-                    print('attempt to access _state[{}][{}]'.format(rowi - 1, lifei))
-                    life.specifyNeighbor(self._state[rowi - 1][lifei    ])
-                    print('attempt to access _state[{}][{}]'.format(rowi - 1, lifei + 1))
-                    life.specifyNeighbor(self._state[rowi - 1][lifei + 1])
-                    print('attempt to access _state[{}][{}]'.format(rowi, lifei -1))
-                    life.specifyNeighbor(self._state[rowi    ][lifei - 1])
-                    print('attempt to access _state[{}][{}]'.format(rowi, lifei + 1))
-                    life.specifyNeighbor(self._state[rowi    ][lifei + 1])
-                    print('attempt to access _state[{}][{}]'.format(rowi + 1, lifei - 1))
-                    life.specifyNeighbor(self._state[rowi + 1][lifei - 1])
-                    print('attempt to access _state[{}][{}]'.format(rowi + 1, lifei))
-                    life.specifyNeighbor(self._state[rowi + 1][lifei    ])
-                    print('attempt to access _state[{}][{}]'.format(rowi + 1, lifei + 1))
-                    life.specifyNeighbor(self._state[rowi + 1][lifei + 1])
-                except Exception as e:
-                    pass
-                    '''
+                        if (i, j) != (lifei, rowi):
+                            if i == len(row):
+                                i = 0
+                            if j == len(self._state):
+                                j = 0
+                            # print('attempt to access _state[{}][{}]'.format(j,i))
+                            neighbors.append(self._state[j][i])
+                life.specifyNeighbors(neighbors)
+
     def evolve(self):
         '''
         At each time tick, the universe evolves and updates its lifeforms.
         '''
         self._age += 1
-        [[life.play() for life in row] for row in self._state]
+
+        self.updateNeighbors()
+
+        for row in self._state:
+            for life in row:
+                life.play()
+
+        for row in self._state:
+            for life in row:
+                life.updateState()
 
     def state(self):
         '''

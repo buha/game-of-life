@@ -5,8 +5,8 @@ from random import randint
 from universe import Universe
 
 class constants():
-    CellToScreenRatio = 0.002
-    AtomicTick = 1.0
+    CellToScreenRatio = 0.001
+    AtomicTick = 0.2
     background = QColor(60, 60, 60)
     grid = QColor(20, 20, 20)
     cell = QColor(84, 158, 39)
@@ -46,6 +46,13 @@ class UniverseView(QGraphicsView):
 
         # create a random initial state for the universe
         initial = [[(randint(0, 10) == 9) for i in range(self.cols)] for j in range(self.rows)]
+        '''initial = [[False for i in range(self.cols)] for j in range(self.rows)]
+        initial[0][0] = True
+        initial[0][1] = True
+        initial[1][2] = True
+        initial[2][2] = True
+        initial[3][2] = True
+        '''
 
         # create the universe
         self.universe = Universe(initial)
@@ -76,9 +83,7 @@ class UniverseView(QGraphicsView):
                     self.drawCell(celli, rowi)
 
     def rePaint(self):
-        # evolve
-        self.universe.evolve()
-        print("Universe age {}".format(self.universe._age))
+        print("Drawing Universe of age {}".format(self.universe._age))
 
         # delete everything on the canvas
         self.scene.clear()
@@ -97,3 +102,14 @@ class UniverseView(QGraphicsView):
         # draw the universe
         state = self.universe.state()
         self.draw(state)
+
+        # evolve
+        self.universe.evolve()
+
+    def keyPressEvent(self, QKeyEvent):
+        # delete selected items when pressing the keyboard's delete key
+        if QKeyEvent.key() == Qt.Key_Space:
+            if self.timer.isActive():
+                self.stop()
+            else:
+                self.timer.start(constants.AtomicTick * 1000)
