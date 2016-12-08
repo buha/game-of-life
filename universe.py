@@ -52,10 +52,16 @@ class Lifeform():
 
     def updateState(self):
         if self._state == LifeformState.dying:
-            self._state = LifeformState.dead
+            self.kill()
 
         if self._state == LifeformState.resurrecting:
-            self._state = LifeformState.alive
+            self.resurrect()
+
+    def kill(self):
+        self._state = LifeformState.dead
+
+    def resurrect(self):
+        self._state = LifeformState.alive
 
 
 class Universe():
@@ -82,7 +88,6 @@ class Universe():
                                 i = 0
                             if j == len(self._state):
                                 j = 0
-                            # print('attempt to access _state[{}][{}]'.format(j,i))
                             neighbors.append(self._state[j][i])
                 life.specifyNeighbors(neighbors)
 
@@ -108,3 +113,14 @@ class Universe():
         :return: 2D list of booleans
         '''
         return [[life.alive() for life in row] for row in self._state]
+
+    def toggleLifeform(self, col, row):
+        try:
+            l = self._state[row][col]
+        except IndexError:
+            return
+
+        if l.alive():
+            l.kill()
+        else:
+            l.resurrect()

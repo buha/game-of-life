@@ -11,10 +11,14 @@ class MainWindow(QMainWindow):
         self.ui = design.Ui_MainWindow()
         self.ui.setupUi(self)
 
+        # resize the main window to a sensible value
         self.resize(screen_width / 2, screen_height / 2)
 
-        # create the universe
-        self.ui.graphicsView.start(screen_width, screen_height)
+        # resize the graphics scene to match the window
+        self.ui.graphicsView.resize(self.width(), self.height)
+
+        # start the animation directly
+        self.ui.graphicsView.start()
 
 if __name__ == '__main__':
     # set up graphics
