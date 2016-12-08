@@ -7,7 +7,7 @@ from time import perf_counter
 
 class constants():
     CellToScreenRatio = 0.01
-    AtomicTick = 0.001
+    AtomicTick = 0.01
     background = QColor(60, 60, 60)
     grid = QColor(20, 20, 20)
     cell = QColor(84, 158, 39)
@@ -26,10 +26,12 @@ class UniverseView(QGraphicsView):
 
         # set up time
         self._timer = QTimer()
-        self._timer.timeout.connect(self.rePaint)
+        self._timer.timeout.connect(self.timeTick)
 
-        # status bar
+        # defaults
         self._showStatus = False
+        self._showGrid = False
+        self._mousePosition = (0,0)
 
     def resize(self, wscene, hscene):
         # set a sensible value for the cell size relative to screen size
@@ -89,6 +91,10 @@ class UniverseView(QGraphicsView):
         age.setDefaultTextColor(Qt.white)
         age.setPos(0, 15)
 
+        age = self._scene.addText('Mouse at x {}, y {}'.format(self._mousePosition[0], self._mousePosition[1]))
+        age.setDefaultTextColor(Qt.white)
+        age.setPos(0, 30)
+
     def drawGrid(self):
         for row in range(self.rows - 1):
             line = self._scene.addLine(0, (row + 1) * self.cell_size, self._scene.width(), (row + 1) * self.cell_size)
@@ -97,9 +103,7 @@ class UniverseView(QGraphicsView):
             line = self._scene.addLine((col + 1) * self.cell_size, 0, (col + 1) * self.cell_size, self._scene.height())
             line.setPen(QPen(QBrush(constants.grid), 1))
 
-    def rePaint(self):
-        start_t = perf_counter()
-
+    def reDraw(self):
         # delete everything on the canvas
         self._scene.clear()
 
@@ -107,11 +111,21 @@ class UniverseView(QGraphicsView):
         self._scene.setBackgroundBrush(constants.background)
 
         # grid
-        #self.drawGrid()
+        if self._showGrid:
+            self.drawGrid()
 
         # draw the universe
         state = self.universe.state()
         self.draw(state)
+
+        # status
+        if self._showStatus:
+            self.status()
+
+    def timeTick(self):
+        start_t = perf_counter()
+
+        self.reDraw()
 
         # evolve
         self.universe.evolve()
@@ -122,9 +136,6 @@ class UniverseView(QGraphicsView):
         self.frame_timestamps.append(time_taken)
         self.frame_timestamps = self.frame_timestamps[-30:]
         self._FPS = len(self.frame_timestamps) / sum(self.frame_timestamps)
-
-        if self._showStatus:
-            self.status()
 
     def keyPressEvent(self, QKeyEvent):
         # delete selected items when pressing the keyboard's delete key
@@ -137,9 +148,19 @@ class UniverseView(QGraphicsView):
         elif QKeyEvent.key() == Qt.Key_S:
             self._showStatus = not self._showStatus
 
+        elif QKeyEvent.key() == Qt.Key_G:
+            self._showGrid = not self._showGrid
+
+        self.reDraw()
         QGraphicsView.keyPressEvent(self, QKeyEvent)
 
     def mousePressEvent(self, QMouseEvent):
         self.universe.toggleLifeform(int(QMouseEvent.x() / self.cell_size),
                                      int(QMouseEvent.y() / self.cell_size))
+        self.reDraw()
+        QGraphicsView.mousePressEvent(self, QMouseEvent)
+
+
+    def mouseMoveEvent(self, QMouseEvent):
+        self._mousePosition = (int(QMouseEvent.x() / self.cell_size), int(QMouseEvent.y() / self.cell_size))
 

@@ -22,6 +22,7 @@ class Ui_MainWindow(object):
         self.graphicsView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.graphicsView.setFrameShadow(QtWidgets.QFrame.Plain)
         self.graphicsView.setLineWidth(0)
+        self.graphicsView.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.graphicsView.setObjectName("graphicsView")
         self.gridLayout.addWidget(self.graphicsView, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
