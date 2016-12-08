@@ -15,9 +15,15 @@ class MainWindow(QMainWindow):
         self.resize(screen_width / 2, screen_height / 2)
 
         # resize the graphics scene to match the window
-        self.ui.graphicsView.resize(self.width(), self.height)
+        self.ui.graphicsView.resize(screen_width, screen_height)
 
         # start the animation directly
+        self.ui.graphicsView.start()
+
+    def resizeEvent(self, QResizeEvent):
+        # resize the graphics scene to match the window
+        self.ui.graphicsView.stop()
+        self.ui.graphicsView.resize(screen_resolution.width(), screen_resolution.height())
         self.ui.graphicsView.start()
 
 if __name__ == '__main__':

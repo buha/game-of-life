@@ -6,7 +6,7 @@ from universe import Universe
 from time import perf_counter
 
 class constants():
-    CellToScreenRatio = 0.01
+    CellToScreenRatio = 0.005
     AtomicTick = 0.01
     background = QColor(60, 60, 60)
     grid = QColor(20, 20, 20)
@@ -33,9 +33,9 @@ class UniverseView(QGraphicsView):
         self._showGrid = False
         self._mousePosition = (0,0)
 
-    def resize(self, wscene, hscene):
+    def resize(self, wscreen, hscreen):
         # set a sensible value for the cell size relative to screen size
-        self.cell_size = int(wscene * constants.CellToScreenRatio) # in pixels
+        self.cell_size = int(wscreen * constants.CellToScreenRatio) # in pixels
         if self.cell_size < 2:
             self.cell_size = 2
 

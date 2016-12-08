@@ -76,20 +76,23 @@ class Universe():
         # create all the Lifeforms and store them into the Universe's state
         self._state = [[Lifeform(i) for i in row] for row in state]  # 2D list of Lifeforms
 
+    def getNeighbors(self, col, row):
+        neighbors = []
+        for j in range(row - 1, row + 2):
+            for i in range(col - 1, col + 2):
+                if (i, j) != (col, row):
+                    if i == len(self._state[0]):
+                        i = 0
+                    if j == len(self._state):
+                        j = 0
+                    neighbors.append(self._state[j][i])
+        return neighbors
+
     def updateNeighbors(self):
         # repass over the Universe's state to specify neighbors
         for rowi, row in enumerate(self._state):
             for lifei, life in enumerate(row):
-                neighbors = []
-                for j in range(rowi - 1, rowi + 2):
-                    for i in range(lifei - 1, lifei + 2):
-                        if (i, j) != (lifei, rowi):
-                            if i == len(row):
-                                i = 0
-                            if j == len(self._state):
-                                j = 0
-                            neighbors.append(self._state[j][i])
-                life.specifyNeighbors(neighbors)
+                life.specifyNeighbors(self.getNeighbors(lifei, rowi))
 
     def evolve(self):
         '''
@@ -124,3 +127,5 @@ class Universe():
             l.kill()
         else:
             l.resurrect()
+
+        self.updateNeighbors()
