@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
-# from PyQt5.QtCore import (QThread, QSize, pyqtSignal, pyqtSlot)
+from PyQt5.QtCore import Qt
 import design
 
 class MainWindow(QMainWindow):
@@ -25,6 +25,14 @@ class MainWindow(QMainWindow):
         self.ui.graphicsView.stop()
         self.ui.graphicsView.resize(screen_resolution.width(), screen_resolution.height())
         self.ui.graphicsView.start()
+
+    def keyPressEvent(self, QKeyEvent):
+        if QKeyEvent.key() == Qt.Key_F11:
+            if self.windowState() == Qt.WindowFullScreen:
+                self.showNormal()
+            else:
+                self.showFullScreen()
+        
 
 if __name__ == '__main__':
     # set up graphics
