@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import Qt
 import design
+from random import randint
 
 class MainWindow(QMainWindow):
     def __init__(self, screen_width, screen_height):
@@ -15,10 +16,15 @@ class MainWindow(QMainWindow):
         self.resize(screen_width / 2, screen_height / 2)
 
         # resize the graphics scene to match the window
-        self.ui.graphicsView.resize(screen_width, screen_height)
+        uv = self.ui.graphicsView
+        uv.resize(screen_width, screen_height)
+
+        # create a random initial state for the universe
+        initial = [[(randint(0, 10) == 9) for i in range(uv.cols)] for j in range(uv.rows)]
+        uv.initialize(initial)
 
         # start the animation directly
-        self.ui.graphicsView.start()
+        uv.start()
 
     def resizeEvent(self, QResizeEvent):
         # resize the graphics scene to match the window

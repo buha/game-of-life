@@ -20,7 +20,8 @@ class Lifeform():
         '''
         Is this cell alive?
         '''
-        return True if self._state in [LifeformState.alive, LifeformState.dying] else False
+        return True if self._state in \
+            [LifeformState.alive, LifeformState.dying] else False
 
     def specifyNeighbors(self, neighbors):
         '''
@@ -42,13 +43,13 @@ class Lifeform():
         '''
         nc = self.aliveNeighbors()
 
+        if self.alive():
+            self._age += 1
+
         if (nc < 2 or nc > 3) and self.alive():
             self._state = LifeformState.dying
         if nc == 3 and not self.alive():
             self._state = LifeformState.resurrecting
-
-        if self.alive():
-            self._age += 1
 
     def updateState(self):
         if self._state == LifeformState.dying:
@@ -70,9 +71,10 @@ class Universe():
         Initialize the game with the initial state (the only input to the original Game of Life)
         :param state: 2D list of booleans
         '''
-
         self._age = 0
+        self.seed(state)
 
+    def seed(self, state):
         # create all the Lifeforms and store them into the Universe's state
         self._state = [[Lifeform(i) for i in row] for row in state]  # 2D list of Lifeforms
 

@@ -1,12 +1,11 @@
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
 from PyQt5.QtCore import Qt, QTimer, QPointF, QLineF, QRectF
 from PyQt5.QtGui import QBrush, QPen, QColor
-from random import randint
 from universe import Universe
 from time import perf_counter
 
 class constants():
-    CellToScreenRatio = 0.005
+    CellToScreenRatio = 0.01
     AtomicTick = 0.01
     background = QColor(60, 60, 60)
     grid = QColor(20, 20, 20)
@@ -33,6 +32,25 @@ class UniverseView(QGraphicsView):
         self._showGrid = False
         self._mousePosition = (0,0)
 
+    def initialize(self, initialState):
+        self.universe = Universe(initialState)
+
+    def seed(self, state):
+        self.universe.seed(state)
+
+    def start(self):
+        self._timer.start(constants.AtomicTick * 1000)
+        self.frame_timestamps = []
+
+    def stop(self):
+        self._timer.stop()
+
+    def rows(self):
+        return self.rows
+
+    def cols(self):
+        return self.colss
+
     def resize(self, wscreen, hscreen):
         # set a sensible value for the cell size relative to screen size
         self.cell_size = int(wscreen * constants.CellToScreenRatio) # in pixels
@@ -50,18 +68,27 @@ class UniverseView(QGraphicsView):
         self.rows = int(self._scene.height() / self.cell_size)
         self.cols = int(self._scene.width() / self.cell_size)
 
-        # create a random initial state for the universe
-        initial = [[(randint(0, 10) == 9) for i in range(self.cols)] for j in range(self.rows)]
+        # resize the 2D boolean representation of the universe according to grid size
+        s = None
+        try:
+            s = self.universe.state()
+        except:
+            return
 
-        # create the universe
-        self.universe = Universe(initial)
+        s = s[:self.rows] # in case we grew smaller, cut extra rows
+        while self.rows > len(s):
+            s.append([False] * self.cols)
 
-    def start(self):
-        self._timer.start(constants.AtomicTick * 1000)
-        self.frame_timestamps = []
+        for rowi, row in enumerate(s):
+            s[rowi] = s[rowi][:self.cols] # in case we grew smaller, cut extra items in row
+            for coli, col in enumerate(range(self.cols)):
+                try:
+                    s[rowi][coli] # try to access the indexes
+                except:
+                    s[rowi].append(False) # if we grew bigger, previous index access will generate an exception.
+                                          # it's about time to add False items (dead cells) to the row
 
-    def stop(self):
-        self._timer.stop()
+        self.universe.seed(s)
 
     def drawCell(self, x, y):
         item = QGraphicsRectItem(x * self.cell_size,
