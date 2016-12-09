@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
-from PyQt5.QtCore import Qt, QTimer, QPointF, QLineF, QRectF
+from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QBrush, QPen, QColor
 from universe import Universe
 from time import perf_counter
 
 class constants():
     CellToScreenRatio = 0.01
-    AtomicTick = 0.01
+    DefaultAtomicTick = 0.1
     background = QColor(60, 60, 60)
     grid = QColor(20, 20, 20)
     cell = QColor(84, 158, 39)
@@ -26,6 +26,7 @@ class UniverseView(QGraphicsView):
         # set up time
         self._timer = QTimer()
         self._timer.timeout.connect(self.timeTick)
+        self._timerTickPeriod = constants.DefaultAtomicTick
 
         # defaults
         self._showStatus = False
@@ -39,8 +40,9 @@ class UniverseView(QGraphicsView):
         self.universe.seed(state)
 
     def start(self):
-        self._timer.start(constants.AtomicTick * 1000)
+        self._timer.start(constants.DefaultAtomicTick * 1000)
         self.frame_timestamps = []
+        self.start_t = perf_counter()
 
     def stop(self):
         self._timer.stop()
@@ -88,6 +90,7 @@ class UniverseView(QGraphicsView):
                     s[rowi].append(False) # if we grew bigger, previous index access will generate an exception.
                                           # it's about time to add False items (dead cells) to the row
 
+        # feed the new universe representation to it as if we were starting all anew
         self.universe.seed(s)
 
     def drawCell(self, x, y):
@@ -114,13 +117,21 @@ class UniverseView(QGraphicsView):
         value.setDefaultTextColor(Qt.white)
         value.setPos(0, 0)
 
+        value = self._scene.addText('Desired FPS: {:.2f}'.format(1/self._timerTickPeriod))
+        value.setDefaultTextColor(Qt.white)
+        value.setPos(0, 15)
+
         age = self._scene.addText('Universe age: {}'.format(self.universe._age))
         age.setDefaultTextColor(Qt.white)
-        age.setPos(0, 15)
+        age.setPos(0, 30)
 
         age = self._scene.addText('Mouse at x {}, y {}'.format(self._mousePosition[0], self._mousePosition[1]))
         age.setDefaultTextColor(Qt.white)
-        age.setPos(0, 30)
+        age.setPos(0, 45)
+
+        age = self._scene.addText('Universe size {}x{}'.format(self.rows, self.cols))
+        age.setDefaultTextColor(Qt.white)
+        age.setPos(0, 60)
 
     def drawGrid(self):
         for row in range(self.rows - 1):
@@ -150,19 +161,19 @@ class UniverseView(QGraphicsView):
             self.status()
 
     def timeTick(self):
-        start_t = perf_counter()
+        end_t = perf_counter()
+        time_taken = end_t - self.start_t
+        self.start_t = end_t
+        self.frame_timestamps.append(time_taken)
+        self.frame_timestamps = self.frame_timestamps[-30:]
+        self._FPS = len(self.frame_timestamps) / sum(self.frame_timestamps)
 
         self.reDraw()
 
         # evolve
         self.universe.evolve()
 
-        end_t = perf_counter()
-        time_taken = end_t - start_t
-        start_t = end_t
-        self.frame_timestamps.append(time_taken)
-        self.frame_timestamps = self.frame_timestamps[-30:]
-        self._FPS = len(self.frame_timestamps) / sum(self.frame_timestamps)
+
 
     def keyPressEvent(self, QKeyEvent):
         # delete selected items when pressing the keyboard's delete key
@@ -170,13 +181,22 @@ class UniverseView(QGraphicsView):
             if self._timer.isActive():
                 self.stop()
             else:
-                self._timer.start(constants.AtomicTick * 1000)
+                self._timer.start(constants.DefaultAtomicTick * 1000)
 
         elif QKeyEvent.key() == Qt.Key_S:
             self._showStatus = not self._showStatus
 
         elif QKeyEvent.key() == Qt.Key_G:
             self._showGrid = not self._showGrid
+
+        elif QKeyEvent.key() == Qt.Key_Minus:
+            self._timerTickPeriod *= 1.05
+            self._timer.setInterval(self._timerTickPeriod * 1000)
+
+
+        elif QKeyEvent.key() == Qt.Key_Plus:
+            self._timerTickPeriod /= 1.05
+            self._timer.setInterval(self._timerTickPeriod * 1000)
 
         self.reDraw()
         QGraphicsView.keyPressEvent(self, QKeyEvent)
