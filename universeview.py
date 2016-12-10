@@ -5,7 +5,7 @@ from universe import Universe
 from time import perf_counter
 
 class constants():
-    CellToScreenRatio = 0.01
+    DefaultCellToScreenRatio = 0.005
     DefaultAtomicTick = 0.1
     background = QColor(60, 60, 60)
     grid = QColor(20, 20, 20)
@@ -32,6 +32,7 @@ class UniverseView(QGraphicsView):
         self._showStatus = False
         self._showGrid = False
         self._mousePosition = (0,0)
+        self._CellToScreenRatio = 0.01
 
     def initialize(self, initialState):
         self.universe = Universe(initialState)
@@ -55,7 +56,7 @@ class UniverseView(QGraphicsView):
 
     def resize(self, wscreen, hscreen):
         # set a sensible value for the cell size relative to screen size
-        self.cell_size = int(wscreen * constants.CellToScreenRatio) # in pixels
+        self.cell_size = int(wscreen * self._CellToScreenRatio)
         if self.cell_size < 2:
             self.cell_size = 2
 
@@ -206,4 +207,14 @@ class UniverseView(QGraphicsView):
 
     def mouseMoveEvent(self, QMouseEvent):
         self._mousePosition = (int(QMouseEvent.x() / self.cell_size), int(QMouseEvent.y() / self.cell_size))
+
+    def wheelEvent(self, QWheelEvent):
+        # adjust the cell to screen ratio with input from mouse wheel
+        if QWheelEvent.angleDelta().y() > 0:
+            self._CellToScreenRatio *= 1.05
+        else:
+            self._CellToScreenRatio /= 1.05
+
+        # resize the grid accordingly
+        self.resize(self.parent().parent().width(), self.parent().parent().height())
 

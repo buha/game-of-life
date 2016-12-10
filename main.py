@@ -28,9 +28,7 @@ class MainWindow(QMainWindow):
 
     def resizeEvent(self, QResizeEvent):
         # resize the graphics scene to match the window
-        self.ui.graphicsView.stop()
         self.ui.graphicsView.resize(screen_resolution.width(), screen_resolution.height())
-        self.ui.graphicsView.start()
 
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == Qt.Key_F11:
