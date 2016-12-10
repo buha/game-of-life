@@ -48,7 +48,7 @@ if __name__ == '__main__':
     screen_resolution = app.desktop().screenGeometry()
     main = MainWindow(screen_resolution.width(), screen_resolution.height())
 
-    # draw
+    # draw, launch qt app
     main.show()
     s = app.exec_()
 

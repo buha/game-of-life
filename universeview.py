@@ -165,7 +165,7 @@ class UniverseView(QGraphicsView):
         time_taken = end_t - self.start_t
         self.start_t = end_t
         self.frame_timestamps.append(time_taken)
-        self.frame_timestamps = self.frame_timestamps[-30:]
+        self.frame_timestamps = self.frame_timestamps[-5:]
         self._FPS = len(self.frame_timestamps) / sum(self.frame_timestamps)
 
         self.reDraw()
@@ -173,15 +173,12 @@ class UniverseView(QGraphicsView):
         # evolve
         self.universe.evolve()
 
-
-
     def keyPressEvent(self, QKeyEvent):
-        # delete selected items when pressing the keyboard's delete key
         if QKeyEvent.key() == Qt.Key_Space:
             if self._timer.isActive():
                 self.stop()
             else:
-                self._timer.start(constants.DefaultAtomicTick * 1000)
+                self._timer.start(self._timerTickPeriod  * 1000)
 
         elif QKeyEvent.key() == Qt.Key_S:
             self._showStatus = not self._showStatus
@@ -192,7 +189,6 @@ class UniverseView(QGraphicsView):
         elif QKeyEvent.key() == Qt.Key_Minus:
             self._timerTickPeriod *= 1.05
             self._timer.setInterval(self._timerTickPeriod * 1000)
-
 
         elif QKeyEvent.key() == Qt.Key_Plus:
             self._timerTickPeriod /= 1.05
