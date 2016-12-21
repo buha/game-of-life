@@ -42,11 +42,15 @@ if __name__ == '__main__':
     c2 = 3
     try:
         c1 = int(sys.argv[1])
+        if not (c1 > 0 and c1 < 10):
+            raise ValueError
         c2 = int(sys.argv[2])
+        if not (c2 > 0 and c2 < 10):
+            raise ValueError
     except IndexError:
         pass
     except ValueError:
-        print("c1 and c2 must be positive integers\ngame-of-life [c1 c2]")
+        print("c1 and c2 must be positive integers between 1 and 9\ngame-of-life [c1 c2]")
         sys.exit(0)
 
     # set up graphics
