@@ -32,6 +32,6 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Conwell\'s Game of Life"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Conway\'s Game of Life"))
 
 from universeview import UniverseView

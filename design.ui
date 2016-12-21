@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Conwell's Game of Life</string>
+   <string>Conway's Game of Life</string>
   </property>
   <property name="windowOpacity">
    <double>0.950000000000000</double>

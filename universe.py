@@ -1,17 +1,19 @@
 from life import *
 
 class Universe():
-    def __init__(self, state):
+    def __init__(self, state, c1 = 2, c2 = 3):
         '''
         Initialize the game with the initial state (the only input to the original Game of Life)
         :param state: 2D list of booleans
         '''
         self._age = 0
+        self._c1 = c1
+        self._c2 = c2
         self.seed(state)
 
     def seed(self, state):
         # create all the Lifeforms and store them into the Universe's state
-        self._state = [[Lifeform(i) for i in row] for row in state]  # 2D list of Lifeforms
+        self._state = [[Lifeform(self._c1, self._c2, i) for i in row] for row in state]  # 2D list of Lifeforms
         self.updateNeighbors()
 
     def getNeighbors(self, col, row):

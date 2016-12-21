@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
+from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget
 from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QBrush, QPen, QColor
 from universe import Universe
-from time import perf_counter
+from time import perf_counter, strftime, gmtime
+import os
 
 class constants():
     DefaultCellToScreenRatio = 0.005
@@ -33,6 +34,7 @@ class UniverseView(QGraphicsView):
         self._showGrid = False
         self._mousePosition = (0,0)
         self._CellToScreenRatio = 0.01
+        self._recording = False
 
     def initialize(self, initialState):
         self.universe = Universe(initialState)
@@ -126,13 +128,17 @@ class UniverseView(QGraphicsView):
         age.setDefaultTextColor(Qt.white)
         age.setPos(0, 30)
 
-        age = self._scene.addText('Mouse at x {}, y {}'.format(self._mousePosition[0], self._mousePosition[1]))
+        age = self._scene.addText('Mouse at: {}, {}'.format(self._mousePosition[0], self._mousePosition[1]))
         age.setDefaultTextColor(Qt.white)
         age.setPos(0, 45)
 
-        age = self._scene.addText('Universe size {}x{}'.format(self.rows, self.cols))
+        age = self._scene.addText('Universe size {}, {}'.format(self.rows, self.cols))
         age.setDefaultTextColor(Qt.white)
         age.setPos(0, 60)
+
+        age = self._scene.addText('Recording: {}'.format(self._recording))
+        age.setDefaultTextColor(Qt.white)
+        age.setPos(0, 75)
 
     def drawGrid(self):
         for row in range(self.rows - 1):
@@ -174,6 +180,10 @@ class UniverseView(QGraphicsView):
         # evolve
         self.universe.evolve()
 
+        if self._recording:
+            pixMap = QWidget.grab(self)
+            pixMap.save("{}/{}.png".format(self._recordingDir, str(self.universe._age).zfill(5)))
+
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == Qt.Key_Space:
             if self._timer.isActive():
@@ -186,6 +196,18 @@ class UniverseView(QGraphicsView):
 
         elif QKeyEvent.key() == Qt.Key_G:
             self._showGrid = not self._showGrid
+
+        elif QKeyEvent.key() == Qt.Key_R:
+            if not os.path.exists('recordings'):
+                os.makedirs('recordings')
+            if not self._recording:
+                dir = strftime("recordings/%Y-%m-%d %H:%M:%S", gmtime())
+                if not os.path.exists(dir):
+                    os.makedirs(dir)
+                self._recordingDir = dir
+                self._recording = True
+            else:
+                self._recording = False
 
         elif QKeyEvent.key() == Qt.Key_Minus:
             self._timerTickPeriod *= 1.05

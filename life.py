@@ -7,7 +7,7 @@ class LifeformState(Enum):
     resurrecting = 3
 
 class Lifeform():
-    def __init__(self, state=False):
+    def __init__(self, c1, c2, state=False):
         '''
         Create a lifeform
         :param state: True stands for alive, False stands for dead.
@@ -15,6 +15,9 @@ class Lifeform():
         self._age = 0
         self._state = LifeformState.alive if state else LifeformState.dead
         self._neighbors = []
+        self._c1 = c1
+        self._c2 = c2
+
 
     def alive(self):
         '''
@@ -46,9 +49,9 @@ class Lifeform():
         if self.alive():
             self._age += 1
 
-        if (nc < 2 or nc > 3) and self.alive():
+        if (nc < self._c1 or nc > self._c2) and self.alive():
             self._state = LifeformState.dying
-        if nc == 3 and not self.alive():
+        if nc == self._c2 and not self.alive():
             self._state = LifeformState.resurrecting
 
     def updateState(self):
