@@ -1,7 +1,7 @@
 from life import *
 
 class Universe():
-    def __init__(self, state, c1 = 2, c2 = 3):
+    def __init__(self, state, c1, c2):
         '''
         Initialize the game with the initial state (the only input to the original Game of Life)
         :param state: 2D list of booleans

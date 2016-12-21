@@ -5,7 +5,7 @@ import design
 from random import randint
 
 class MainWindow(QMainWindow):
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, screen_width, screen_height, c1, c2):
         super().__init__()
 
         # build ui
@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
 
         # create a random initial state for the universe
         initial = [[(randint(0, 10) == 9) for i in range(uv.cols)] for j in range(uv.rows)]
-        uv.initialize(initial)
+        uv.initialize(initial, c1, c2)
 
         # start the animation directly
         uv.start()
@@ -36,15 +36,25 @@ class MainWindow(QMainWindow):
                 self.showNormal()
             else:
                 self.showFullScreen()
-        
 
 if __name__ == '__main__':
+    c1 = 2
+    c2 = 3
+    try:
+        c1 = int(sys.argv[1])
+        c2 = int(sys.argv[2])
+    except IndexError:
+        pass
+    except ValueError:
+        print("c1 and c2 must be positive integers\ngame-of-life [c1 c2]")
+        sys.exit(0)
+
     # set up graphics
     app = QApplication(sys.argv)
 
     # get screen resolution and create the main window
     screen_resolution = app.desktop().screenGeometry()
-    main = MainWindow(screen_resolution.width(), screen_resolution.height())
+    main = MainWindow(screen_resolution.width(), screen_resolution.height(), c1, c2)
 
     # draw, launch qt app
     main.show()

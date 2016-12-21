@@ -36,8 +36,8 @@ class UniverseView(QGraphicsView):
         self._CellToScreenRatio = 0.01
         self._recording = False
 
-    def initialize(self, initialState):
-        self.universe = Universe(initialState)
+    def initialize(self, initialState, c1, c2):
+        self.universe = Universe(initialState, c1, c2)
 
     def seed(self, state):
         self.universe.seed(state)
