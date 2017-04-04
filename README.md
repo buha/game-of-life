@@ -1,2 +1,2 @@
 # game-of-life
-A Python+Qt5 implementation of the Conwell's Game of Life
+A Python+Qt5 implementation of the Conway's Game of Life
