@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 import design
 from random import randint
 
@@ -13,7 +13,7 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         # resize the main window to a sensible value
-        self.resize(screen_width / 2, screen_height / 2)
+        self.resize(QSize(int(screen_width / 2), int(screen_height / 2)))
 
         # resize the graphics scene to match the window
         uv = self.ui.graphicsView

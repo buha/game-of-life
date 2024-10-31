@@ -43,7 +43,7 @@ class UniverseView(QGraphicsView):
         self.universe.seed(state)
 
     def start(self):
-        self._timer.start(constants.DefaultAtomicTick * 1000)
+        self._timer.start(int(constants.DefaultAtomicTick * 1000))
         self.frame_timestamps = []
         self.start_t = perf_counter()
 
@@ -189,7 +189,7 @@ class UniverseView(QGraphicsView):
             if self._timer.isActive():
                 self.stop()
             else:
-                self._timer.start(self._timerTickPeriod  * 1000)
+                self._timer.start(int(self._timerTickPeriod  * 1000))
 
         elif QKeyEvent.key() == Qt.Key_S:
             self._showStatus = not self._showStatus
@@ -211,11 +211,11 @@ class UniverseView(QGraphicsView):
 
         elif QKeyEvent.key() == Qt.Key_Minus:
             self._timerTickPeriod *= 1.05
-            self._timer.setInterval(self._timerTickPeriod * 1000)
+            self._timer.setInterval(int(self._timerTickPeriod * 1000))
 
         elif QKeyEvent.key() == Qt.Key_Plus:
             self._timerTickPeriod /= 1.05
-            self._timer.setInterval(self._timerTickPeriod * 1000)
+            self._timer.setInterval(int(self._timerTickPeriod * 1000))
 
         self.reDraw()
         QGraphicsView.keyPressEvent(self, QKeyEvent)
